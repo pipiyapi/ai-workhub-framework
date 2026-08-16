@@ -1,0 +1,26 @@
+# Obsidian settings are supplied by the framework repository.
+/.obsidian/
+/.trash/
+/system/templates/
+/wiki/insights/_template.md
+/wiki/projects/_template.md
+/wiki/references/_template.md
+
+# Machine-local and secret-bearing files never belong in the knowledge repository.
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.key
+**/*.pfx
+**/*.p12
+**/credentials*.json
+**/secrets*.json
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Kept source videos can exceed GitHub's practical file limits. Back them up separately.
+/outputs/video-knowledge/media/

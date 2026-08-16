@@ -1,0 +1,11 @@
+# Core local Chinese ASR. Model weights are downloaded on first use; no API key is used.
+funasr>=1.3.29,<2
+modelscope>=1.25,<2
+torch>=2.2
+torchaudio>=2.2
+soundfile>=0.12
+yt-dlp
+imageio-ffmpeg>=0.5,<1
+
+# Perceptual-hash support for visual mode.
+Pillow>=10,<13

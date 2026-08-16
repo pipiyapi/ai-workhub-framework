@@ -1,0 +1,48 @@
+# The live Obsidian vault is an independent knowledge-data repository.
+/vault/
+
+# Independent project and reference repositories are restored from their own remotes.
+/repos/
+/references/repos/
+/enterprise-skill-platform-template/
+/skill-management-platform-reusable/
+
+# Local analysis and source-snapshot workspaces are not part of the knowledge vault.
+/.codex-remote-attachments/
+/skill-platform-analysis/
+/skill-platform-source-snapshot-*/
+/source_audit.py
+
+# Machine-local environments, dependencies, caches, and build output.
+**/.venv/
+**/venv/
+/scripts/.venv*/
+/scripts/tools/
+**/node_modules/
+**/__pycache__/
+**/.pytest_cache/
+**/.cache/
+**/bin/
+**/obj/
+**/dist/
+**/build/
+*.pyc
+*.tmp
+*.log
+
+# Secrets and credentials must never enter the knowledge backup repository.
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.key
+**/*.pfx
+**/*.p12
+**/*.kdbx
+**/credentials*.json
+**/secrets*.json
+
+# Operating-system noise.
+.DS_Store
+Thumbs.db
+Desktop.ini

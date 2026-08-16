@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "max_videos_per_task": 10,
+  "keep_video": false,
+  "default_mode": "talk",
+  "default_asr_backend": "funasr-paraformer",
+  "allow_asr_fallback": true,
+  "enable_ocr": false,
+  "scene_threshold": 0.35,
+  "perceptual_hash_distance": 8,
+  "douyin_resolver_url": "https://douyin.wtf/api/hybrid/video_data",
+  "douyin_creator_posts_url": "https://douyin.wtf/api/douyin/web/fetch_user_post_videos",
+  "subtitle_languages": ["zh-Hans", "zh-CN", "zh", "zh-Hant", "en"],
+  "downloaders": {
+    "douyin": ["douyin-resolver", "yt-dlp", "lux"],
+    "bilibili": ["yt-dlp", "lux"],
+    "youtube": ["yt-dlp"],
+    "generic": ["yt-dlp"]
+  },
+  "paths": {
+    "raw_root": "vault/raw/video",
+    "note_root": "vault/outputs/video-knowledge/notes",
+    "asset_root": "vault/outputs/video-knowledge/assets",
+    "media_root": "vault/outputs/video-knowledge/media",
+    "template": "vault/system/templates/video-knowledge.md"
+  }
+}
