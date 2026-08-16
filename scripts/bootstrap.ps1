@@ -8,8 +8,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$configPath = Join-Path $PSScriptRoot 'project-config.psd1'
 $vault = Join-Path $root 'vault'
+$configPath = Join-Path $vault 'system\project-config.psd1'
 $reposRoot = Join-Path $root 'repos'
 $referenceReposRoot = Join-Path $root 'references\repos'
 
@@ -34,7 +34,6 @@ $null = Test-CommandAvailable git -Required
 $ghAvailable = Test-CommandAvailable gh
 $codexAvailable = Test-CommandAvailable codex
 if (-not (Test-Path -LiteralPath (Join-Path $root 'AGENTS.md') -PathType Leaf)) { throw 'AGENTS.md is missing.' }
-if (-not (Test-Path -LiteralPath $configPath -PathType Leaf)) { throw "Project configuration is missing: $configPath" }
 
 if (-not (Test-Path -LiteralPath $vault)) {
     if ($EmptyKnowledge) {
@@ -64,7 +63,7 @@ elseif (-not (Test-Path -LiteralPath (Join-Path $vault '.git'))) {
 else { Write-Step 'Knowledge-data repository is present.' Green }
 
 & (Join-Path $PSScriptRoot 'install-vault-template.ps1') -Destination $vault -CheckOnly:$CheckOnly
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+if (-not $CheckOnly -and -not (Test-Path -LiteralPath $configPath -PathType Leaf)) { throw "Project configuration is missing: $configPath" }
 
 foreach ($path in @($reposRoot, $referenceReposRoot)) {
     if (-not (Test-Path -LiteralPath $path)) {
@@ -75,21 +74,33 @@ foreach ($path in @($reposRoot, $referenceReposRoot)) {
 
 if ($SkipProjectClone) { Write-Step 'Internal project cloning was skipped.' Yellow }
 else {
-    if (-not $ghAvailable) { throw 'GitHub CLI is required to restore internal repositories.' }
-    if (-not $CheckOnly) { & gh auth status; if ($LASTEXITCODE -ne 0) { throw 'GitHub CLI authentication failed.' } }
+    if ($CheckOnly -and -not (Test-Path -LiteralPath $configPath -PathType Leaf)) {
+        Write-Step "Would read internal project configuration after restoring knowledge data: $configPath" Yellow
+        Write-Step 'Project clone preview is unavailable until that data file exists.' Yellow
+        Write-Step 'Framework and knowledge-data composition is ready.' Green
+        return
+    }
     $config = Import-PowerShellDataFile -LiteralPath $configPath
     foreach ($project in @($config.Projects)) {
+        foreach ($field in @('Name', 'Directory', 'Provider', 'Repository')) {
+            if ([string]::IsNullOrWhiteSpace([string]$project[$field])) { throw "Missing project config field: $field" }
+        }
         $target = Join-Path $reposRoot ([string]$project.Directory)
         Assert-CloneTarget $target
         if (Test-Path -LiteralPath (Join-Path $target '.git')) { Write-Step "Already restored: $($project.Name)" DarkGray }
-        elseif ($CheckOnly) { Write-Step "Would clone: $($project.Repository) -> $target" Yellow }
-        else { & gh repo clone ([string]$project.Repository) $target; if ($LASTEXITCODE -ne 0) { throw "Failed to clone $($project.Name)." } }
+        elseif ($CheckOnly) { Write-Step "Would clone $($project.Provider): $($project.Repository) -> $target" Yellow }
+        elseif ([string]$project.Provider -eq 'GitHub') {
+            if (-not $ghAvailable) { throw 'GitHub CLI is required to restore GitHub repositories.' }
+            & gh auth status
+            if ($LASTEXITCODE -ne 0) { throw 'GitHub CLI authentication failed.' }
+            & gh repo clone ([string]$project.Repository) $target
+            if ($LASTEXITCODE -ne 0) { throw "Failed to clone $($project.Name)." }
+        }
+        else {
+            & git clone ([string]$project.Repository) $target
+            if ($LASTEXITCODE -ne 0) { throw "Failed to clone $($project.Name)." }
+        }
     }
-    $aiSchoolPath = Join-Path $reposRoot 'AI-School'
-    Assert-CloneTarget $aiSchoolPath
-    if (Test-Path -LiteralPath (Join-Path $aiSchoolPath '.git')) { Write-Step 'Already restored: AI-School' DarkGray }
-    elseif ($CheckOnly) { Write-Step "Would clone AI-School -> $aiSchoolPath" Yellow }
-    else { & git clone 'https://gitee.com/pipiyapi/AI-School' $aiSchoolPath; if ($LASTEXITCODE -ne 0) { throw 'Failed to clone AI-School.' } }
 }
 
 Write-Step 'Framework and knowledge-data composition is ready.' Green

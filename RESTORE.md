@@ -2,8 +2,8 @@
 
 AI WorkHub 将可复用框架与个人知识分开保存：
 
-- 框架仓库：`pipiyapi/ai-workhub-framework`
-- 知识仓库：`pipiyapi/ai-workhub-knowledge-data`
+- 框架仓库：`pipiyapi/ai-workhub-framework`，只保存通用规则、脚本与空白模板。
+- 知识仓库：`pipiyapi/ai-workhub-knowledge-data`，保存个人知识及其 GitHub/Gitee 项目登记。
 
 本地组合后，Codex 仍打开框架根目录，Obsidian 仍打开根目录下的 `vault`。
 
@@ -83,7 +83,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1 -CheckOnly -Ski
 powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1 -SkipProjectClone
 ```
 
-脚本会把 `pipiyapi/ai-workhub-knowledge-data` 克隆到 `vault`，再以“不覆盖已有文件”的方式安装 Obsidian 配置和模板。
+脚本会把 `pipiyapi/ai-workhub-knowledge-data` 克隆到 `vault`，恢复 `vault/system/project-config.psd1` 中属于这个人的项目清单，再以“不覆盖已有文件”的方式安装 Obsidian 配置和模板。
 
 ### 4. 恢复内部项目
 
@@ -93,7 +93,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1 -SkipProjectClo
 powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1
 ```
 
-四个 GitHub 项目从各自私有仓库恢复，AI-School 从 Gitee 恢复。它们不会进入框架仓库或知识仓库。
+脚本读取知识数据中的 `vault/system/project-config.psd1`：GitHub 项目通过 GitHub CLI 恢复，Gitee 等其他 Git 服务通过 `git clone` 恢复。项目源码仍各自位于 `repos/`，不会进入框架仓库或知识仓库。
 
 ### 5. 验证
 
@@ -146,7 +146,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\backup-all.ps1
 ## 六、边界和未备份内容
 
 - 知识仓库不跟踪 `.obsidian/`；它由框架蓝图恢复。
-- `vault/raw/`、`vault/wiki/`、`vault/journal/`、`vault/outputs/` 和同步状态属于知识仓库。
+- `vault/raw/`、`vault/wiki/`、`vault/journal/`、`vault/outputs/`、`vault/AGENTS.md`、内部项目登记和同步状态属于知识仓库。
 - `vault/outputs/video-knowledge/media/` 默认不进 GitHub，保留的视频应使用独立的大文件或加密云备份。
 - `repos/` 与 `references/repos/` 不进入框架或知识仓库。
 - 虚拟环境、下载工具、缓存、Cookie、Token、密钥和 `.env` 不进入任何仓库。

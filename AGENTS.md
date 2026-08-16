@@ -7,7 +7,7 @@
 - 根目录是独立的框架仓库，只保存 `.gitignore`、`AGENTS.md`、`README.md`、`RESTORE.md`、`scripts/` 与 `scripts/vault-template/`；`vault/` 是独立的知识数据仓库并由根 `.gitignore` 排除。框架仓库和知识仓库不得互相暂存、提交或嵌入对方的 Git 历史。
 - 仅当用户明确要求备份，或用户主动执行相应脚本时，允许在根框架仓库执行 `scripts/backup-framework.ps1`，在 `vault/` 知识仓库执行 `scripts/backup-knowledge.ps1`。该例外永远不扩展到 `repos/`、`references/repos/` 或其他独立项目仓库。
 
-- `repos/` = **INTERNAL WORK PROJECTS**。其中四个 GitHub 项目和 AI-School Gitee 项目均为 `ownership = internal`，是用户自己的工作项目和工作事实来源。除非用户明确要求修改项目，否则禁止写入、删除、格式化项目文件，禁止 `git add`、`git commit`、`git push`、`git reset --hard`、`git clean`、创建 PR 或修改仓库配置。
+- `repos/` = **INTERNAL WORK PROJECTS**。具体项目由 `vault/system/project-config.psd1` 登记，均为 `ownership = internal`，是当前知识库所有者的工作项目和工作事实来源。除非用户明确要求修改项目，否则禁止写入、删除、格式化项目文件，禁止 `git add`、`git commit`、`git push`、`git reset --hard`、`git clean`、创建 PR 或修改仓库配置。
 - `references/repos/` = **EXTERNAL REFERENCE REPOSITORIES**。其中仓库均为 `ownership = external`，是第三方参考源码，绝对不能与 `repos/` 混淆，也不能自动成为用户工作事实。
 - 知识库同步只允许获取和读取 Git 数据：`gh auth status`、`gh repo clone`、`git fetch --all --prune`、`git log`、`git diff`、`git show`、`git status`、`git rev-parse`、`git branch --show-current`、`git remote -v`、读取远程 refs、默认分支、提交时间，以及为新分支计算 `git merge-base`。不得 checkout、merge 或改动工作树。
 - `references/repos/` 中的第三方仓库默认只读。知识库任务仅允许 `git clone`、`git fetch`、`git log`、`git diff`、`git show`、`git status` 和阅读源码；禁止自动 add、commit、push、创建 PR、修改或删除源码，除非用户明确要求修改某个第三方项目。
@@ -17,20 +17,10 @@
 
 ## Internal Git 项目
 
-| 项目 | 仓库 | Project 页面 | 分支状态文件 |
-| --- | --- | --- | --- |
-| WPS 合同审查 COM 插件 | `pipiyapi/wps-contract-review-com-addin` | `[[WPS合同审查COM插件]]` | `wps-contract-review-com-addin.json` |
-| Word 文档纠错 COM 插件 | `pipiyapi/document-proofreading-com-plugin` | `[[Word文档纠错COM插件]]` | `document-proofreading-com-plugin.json` |
-| 敏感词库 | `pipiyapi/sensitive-word-library` | `[[敏感词库]]` | `sensitive-word-library.json` |
-| Excel 数据脱敏工具 | `pipiyapi/excel-data-masking-tool` | `[[Excel数据脱敏工具]]` | `excel-data-masking-tool.json` |
-
-以上四个 GitHub 项目继续由 `scripts/sync-github.ps1` 和 `vault/system/sync-state/github/` 维护，现有同步逻辑不得因 AI-School 接入而改写。
-
-| 项目 | 仓库 | Project 页面 | 同步方式 |
-| --- | --- | --- | --- |
-| AI-School | `https://gitee.com/pipiyapi/AI-School` | `[[AI-School]]` | 当前手工执行 `git fetch --all --prune` 并读取全部 `origin/*` 分支 |
-
-AI-School 是用户自己的内部工作项目，不是 External Reference。它保存于 `repos/AI-School/`；Gitee 是公开稳定分发源，GitHub 私有仓库是开发镜像。当前不要把 AI-School 加入仅按 GitHub CLI 处理缺失仓库的 `project-config.psd1`，除非同步脚本先显式支持 Gitee Clone。
+- 项目身份、Git 服务、远端地址、本地目录、Project 页面和同步方式全部登记在 `vault/system/project-config.psd1`；它是知识数据，不属于可复用框架。
+- `Provider = 'GitHub'` 的项目通过 GitHub CLI 恢复；其他 Git 服务默认通过 `git clone` 恢复。
+- `SyncMode = 'GitHubBranches'` 的项目由 `scripts/sync-github.ps1` 和 `vault/system/sync-state/github/` 维护；其他同步模式不得被该脚本擅自处理。
+- 新建空知识库时，框架只提供空白示例配置，不附带任何人的仓库名称、账号或项目清单。
 
 状态目录为 `vault/system/sync-state/github/`。每个 JSON 是“远程分支名 → 最后成功处理 SHA”的对象，例如：
 
@@ -46,7 +36,7 @@ AI-School 是用户自己的内部工作项目，不是 External Reference。它
 
 ### Internal Source
 
-- `repos/`：用户自己的四个 GitHub 工作项目及 AI-School Gitee 项目，`ownership = internal`。
+- `repos/`：由 `vault/system/project-config.psd1` 登记的当前用户工作项目，`ownership = internal`。
 - `vault/wiki/projects/`：只保存用户内部项目的长期 Project 页面。
 - Internal 项目的 commit、diff 和 Project 页面可以在与日期、分支状态相符时作为工作事实证据。
 
@@ -152,7 +142,7 @@ Insight 只用于经过验证且有长期价值的踩坑、模型规律、性能
 
 ### GITHUB_INGEST
 
-1. 从 `scripts/project-config.psd1` 读取项目配置。仓库不存在时先执行 `gh auth status`；认证成功才可用 `gh repo clone`。认证或权限失败时停止 Clone，不反复重试。
+1. 从 `vault/system/project-config.psd1` 读取 `SyncMode = 'GitHubBranches'` 的项目配置。仓库不存在时先执行 `gh auth status`；认证成功才可用 `gh repo clone`。认证或权限失败时停止 Clone，不反复重试。
 2. 执行 `git fetch --all --prune`，识别默认分支和 `refs/remotes/origin/` 下除 `origin/HEAD` 外的全部远程分支，获取分支名、HEAD SHA 和最近提交时间。
 3. 首次理解 README、目录结构、核心配置、关键代码、依赖、测试和主要文档，建立唯一 Project 页面。
 4. 对默认分支做首次项目基线分析。对其他首次发现的分支，用默认分支与新分支的 `merge-base` 作为 BASE_SHA，只分析 `BASE_SHA..NEW_SHA`，禁止重读整个分支历史。
@@ -172,7 +162,7 @@ Insight 只用于经过验证且有长期价值的踩坑、模型规律、性能
 
 1. 原始日报只读位置：`vault/journal/daily/raw/YYYY-MM-DD.md`。绝对禁止修改、删除、润色、重命名、移动或覆盖。
 2. 整理后的日报写入 `vault/journal/daily/organized/YYYY-MM-DD.md`，结构为：今日完成、项目进展、问题与解决、知识洞察、明日计划、关联项目、关联知识。
-3. 综合当天原始日报、全部 internal 仓库相关远程分支 commits/diff、Project 页面、当天 Insights/Wiki 更新及 system log。当前包括四个 GitHub 仓库和 AI-School Gitee 仓库。
+3. 综合当天原始日报、`vault/system/project-config.psd1` 登记的全部 internal 仓库相关远程分支 commits/diff、Project 页面、当天 Insights/Wiki 更新及 system log。
 4. GitHub/Gitee 只用于补全和验证人工日报，不能替代人工日报。描述做了什么、解决什么、推进到哪里，不复制 commit message、不夸大。
 5. 分支工作必须标注真实状态；Feature 分支内容不得自动写为已完成。没有依据的计划或成果不得编造。
 6. External Source 不能仅因被收藏、Clone、分析或形成 Reference 页面就成为工作事实。只有当天 raw 明确记录“调研、阅读、对比、参考、方案分析”等行为时，才可写用户完成了相应调研；仍不得把第三方项目自身能力写成用户开发成果。

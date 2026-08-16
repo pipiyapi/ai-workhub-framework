@@ -4,8 +4,9 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$root = [System.IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
 if ([string]::IsNullOrWhiteSpace($ConfigPath)) {
-    $ConfigPath = Join-Path $PSScriptRoot 'project-config.psd1'
+    $ConfigPath = Join-Path $root 'vault\system\project-config.psd1'
 }
 
 function Write-Step {
@@ -90,7 +91,6 @@ if (-not (Test-Path -LiteralPath $ConfigPath -PathType Leaf)) {
 }
 
 $config = Import-PowerShellDataFile -LiteralPath $ConfigPath
-$root = [System.IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
 $reposRoot = Join-Path $root 'repos'
 $stateRoot = Join-Path $root 'vault\system\sync-state\github'
 $projectPagesRoot = Join-Path $root 'vault\wiki\projects'
@@ -105,13 +105,15 @@ $failures = New-Object System.Collections.Generic.List[string]
 $ghChecked = $false
 $ghAuthenticated = $false
 
-foreach ($project in @($config.Projects)) {
+$githubProjects = @($config.Projects | Where-Object { [string]$_.SyncMode -eq 'GitHubBranches' })
+foreach ($project in $githubProjects) {
     $name = [string]$project.Name
     $scope = $name
     try {
-        foreach ($field in @('Name', 'Directory', 'Repository', 'ProjectPageUtf8Base64', 'StateFile')) {
+        foreach ($field in @('Name', 'Directory', 'Provider', 'Repository', 'SyncMode', 'ProjectPageUtf8Base64', 'StateFile')) {
             if ([string]::IsNullOrWhiteSpace([string]$project[$field])) { throw "Missing project config field: $field" }
         }
+        if ([string]$project.Provider -ne 'GitHub') { throw "GitHubBranches requires Provider = GitHub: $name" }
 
         $repoPath = [System.IO.Path]::GetFullPath((Join-Path $reposRoot ([string]$project.Directory)))
         if (-not $repoPath.StartsWith($reposRoot + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)) {

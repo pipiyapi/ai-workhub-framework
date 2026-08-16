@@ -2,8 +2,8 @@
 
 新电脑备份与恢复请先阅读 [RESTORE.md](RESTORE.md)。AI WorkHub 使用两个互相独立的私有仓库：
 
-- `pipiyapi/ai-workhub-framework`：可复用框架、Codex 规则、脚本、Obsidian Vault 蓝图与恢复文档。
-- `pipiyapi/ai-workhub-knowledge-data`：个人 Wiki、日报、Raw 来源、处理结果和同步状态。
+- `pipiyapi/ai-workhub-framework`：可复用规则、通用脚本、空白 Obsidian Vault 蓝图与恢复文档，不包含任何用户的项目清单。
+- `pipiyapi/ai-workhub-knowledge-data`：个人 Wiki、日报、Raw 来源、处理结果、内部项目登记和同步状态。
 
 本地仍组合成一个工作目录：Codex 打开 `D:\AI-WorkHub`，Obsidian 打开 `D:\AI-WorkHub\vault`。`vault/` 本身是独立 Git 仓库，并被外层框架仓库忽略。
 
@@ -18,7 +18,7 @@
 | 层 | 本地位置 | GitHub 仓库 | 可以单独使用 |
 | --- | --- | --- | --- |
 | 框架 | `D:\AI-WorkHub` | `ai-workhub-framework` | 是，可生成全新的空 Vault |
-| 知识 | `D:\AI-WorkHub\vault` | `ai-workhub-knowledge-data` | 是，可导入任意兼容框架 |
+| 知识与用户项目配置 | `D:\AI-WorkHub\vault` | `ai-workhub-knowledge-data` | 是，可导入任意兼容框架 |
 | 内部项目 | `D:\AI-WorkHub\repos\*` | 各项目原仓库 | 是，各自独立恢复 |
 
 框架蓝图位于 `scripts/vault-template/`。`bootstrap.ps1` 只补齐缺失的 Obsidian 配置、目录和模板，不覆盖已经存在的知识文件。
@@ -36,39 +36,20 @@
 .\scripts\backup-all.ps1
 ```
 
-## 四个私有 GitHub 项目
+## 用户自己的 GitHub/Gitee 项目
 
-项目配置集中在 `scripts\project-config.psd1`：
+真实项目清单集中在知识数据仓库的 `vault\system\project-config.psd1`，因此不同的人或不同知识数据集可以拥有完全不同的 GitHub/Gitee 项目。框架仓库只在 `scripts\vault-template\system\project-config.psd1` 提供空白示例。
 
-- `pipiyapi/wps-contract-review-com-addin`
-- `pipiyapi/document-proofreading-com-plugin`
-- `pipiyapi/sensitive-word-library`
-- `pipiyapi/excel-data-masking-tool`
+项目源码仍分别恢复到 `repos\<project>`，不会复制进 framework 或 knowledge-data Git 历史。`Provider = 'GitHub'` 的项目由 GitHub CLI 克隆，其他 Git 服务由普通 `git clone` 克隆。
 
-仓库缺失时，脚本先检查 `gh auth status`，认证成功后才使用 `gh repo clone`。需要重新登录时执行：
+GitHub 仓库缺失时，脚本先检查 `gh auth status`，认证成功后才使用 `gh repo clone`。需要重新登录时执行：
 
 ```powershell
 gh auth login --hostname github.com --git-protocol https --web
 gh auth status
 ```
 
-账号必须对四个私有仓库具有读取权限。
-
-## AI-School Gitee 项目
-
-AI-School 是用户自己的 internal 工作项目，不是第三方参考项目：
-
-- Gitee：https://gitee.com/pipiyapi/AI-School
-- 本地事实副本：`repos\AI-School`
-- Project 页面：`vault\wiki\projects\AI-School.md`
-
-Gitee 是公开稳定分发源，GitHub 私有仓库是开发镜像。当前 `sync-github.ps1` 仍只负责原有四个 GitHub 仓库，避免破坏已验证的分支同步逻辑。需要更新 AI-School 时，在知识库任务中只读执行：
-
-```powershell
-git -C .\repos\AI-School fetch --all --prune
-```
-
-随后按全部 `origin/*` 分支进行增量分析，并准确区分默认分支与未合并开发分支。
+账号必须对当前知识数据配置中登记的私有仓库具有读取权限。项目特有的补充规则随知识数据保存在 `vault\AGENTS.md`。
 
 ## GitHub 分支同步
 
@@ -78,7 +59,7 @@ git -C .\repos\AI-School fetch --all --prune
 powershell -ExecutionPolicy Bypass -File .\scripts\sync-now.ps1
 ```
 
-同步脚本会：
+同步脚本只处理项目配置中 `SyncMode = 'GitHubBranches'` 的条目，并会：
 
 1. 对每个仓库执行 `git fetch --all --prune`。
 2. 读取 `refs/remotes/origin/` 下除 `origin/HEAD` 外的所有远程分支。
