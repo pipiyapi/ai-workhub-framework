@@ -9,6 +9,12 @@
 
 这是基于 Codex、Obsidian 和 Git 的本地个人工作知识库，内部项目来源同时包含 GitHub 与 Gitee。
 
+## Obsidian 技能集成
+
+框架将 [kepano/obsidian-skills](https://github.com/kepano/obsidian-skills) 中的 `obsidian-markdown` 作为 Markdown 编辑约定的一部分：使用 Wiki 链接关联 Vault 内知识、使用外链保留外部来源，并可使用 Obsidian callout 提示重点。具体边界以根目录 `AGENTS.md` 的“Obsidian Markdown 技能”为准。
+
+已安装的 Bases、Canvas、Obsidian CLI 和 Defuddle 技能均为可选项；当前框架不要求安装额外插件、CLI 或服务，也不会自动向知识库添加 `.base`、`.canvas` 或网页抓取结果。
+
 - Codex 打开知识库仓库根目录（推荐：`D:\AI-WorkHub`）
 - Obsidian 只打开根目录下的 `vault`（推荐：`D:\AI-WorkHub\vault`）
 - `repos/` 不加入 Obsidian Vault，避免源码污染搜索和 Graph View。

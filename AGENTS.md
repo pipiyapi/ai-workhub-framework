@@ -81,6 +81,13 @@ clipped: YYYY-MM-DD
 - 更新重要页面后维护 `vault/wiki/index.md`，但不机械罗列所有文件。
 - 重要操作简洁记录到 `vault/system/log.md`，不记录 token 级或文件级噪声。
 
+## Obsidian Markdown 技能
+
+- 知识库 Markdown 编辑遵循已安装的 `obsidian-markdown` 技能：Vault 内部关系使用 `[[页面名称]]`，外部来源使用标准 Markdown URL，重点信息可使用 `> [!note]` 等 Obsidian callout。
+- 保持本文件既有的事实源与 metadata 规则优先：不得因为该技能建议 frontmatter 就修改 `vault/raw/` 或 `vault/journal/daily/raw/`；对现有 Wiki 只在需要时增量添加属性。
+- `obsidian-bases`、`json-canvas`、`obsidian-cli` 和 `defuddle` 是本机已安装的可选能力。只有用户明确需要数据库视图、画布、运行中的 Obsidian 自动化或网页正文提取时才使用；不得将其引入为必需服务或依赖。
+- 上游来源：`https://github.com/kepano/obsidian-skills`（MIT）。更新或重装应通过 Codex 技能安装器完成，避免在 Vault 中保存机器级技能副本。
+
 ## Project 页面规则
 
 每个项目只维护一个主要长期页面。页面必须记录 Repository、默认分支、最近活跃分支、最近同步时间、已完成内容、正在开发内容、最近重要变化、技术架构、技术决策、问题与解决、相关知识和 Insights。
