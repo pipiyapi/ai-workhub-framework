@@ -9,6 +9,12 @@
 
 这是基于 Codex、Obsidian 和 Git 的本地个人工作知识库，内部项目来源同时包含 GitHub 与 Gitee。
 
+## 框架流程图
+
+![AI WorkHub 框架流程](scripts/ai-workhub-framework.workflow.png)
+
+流程图基于当前仓库的脚本、`AGENTS.md` 规则和双仓边界生成。可查看 [Archify 交互版](scripts/ai-workhub-framework.workflow.html) 或 [可复现的流程定义](scripts/ai-workhub-framework.workflow.json)。
+
 ## Obsidian 技能集成
 
 框架将 [kepano/obsidian-skills](https://github.com/kepano/obsidian-skills) 中的 `obsidian-markdown` 作为 Markdown 编辑约定的一部分：使用 Wiki 链接关联 Vault 内知识、使用外链保留外部来源，并可使用 Obsidian callout 提示重点。具体边界以根目录 `AGENTS.md` 的“Obsidian Markdown 技能”为准。

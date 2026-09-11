@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "AI WorkHub 框架流程",
+    "locale": "zh-CN",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    { "id": "entry", "label": "触发与入口" },
+    { "id": "governance", "label": "规则与编排" },
+    { "id": "sources", "label": "只读事实源" },
+    { "id": "processing", "label": "处理与校验" },
+    { "id": "outputs", "label": "知识沉淀与备份" }
+  ],
+  "phases": [
+    { "id": "intake", "label": "触发", "fromCol": 0, "toCol": 1 },
+    { "id": "route", "label": "约束与取证", "fromCol": 2, "toCol": 3, "variant": "security" },
+    { "id": "curate", "label": "整理、验证与持久化", "fromCol": 4, "toCol": 5, "variant": "emphasis" }
+  ],
+  "mainPath": ["user", "entrypoints", "rules", "operation", "codex", "vault", "backup"],
+  "semanticChecks": {
+    "allowedRoots": ["user", "internal", "external", "raw"],
+    "allowedTerminals": ["backup"],
+    "requiredPaths": [
+      { "from": "user", "to": "vault" },
+      { "from": "internal", "to": "vault" },
+      { "from": "external", "to": "vault" },
+      { "from": "raw", "to": "vault" }
+    ]
+  },
+  "nodes": [
+    { "id": "user", "lane": "entry", "col": 0, "type": "external", "label": "用户请求 / 定时任务", "sublabel": "同步 · 报告 · 入库 · 查询 · 维护", "width": 168 },
+    { "id": "entrypoints", "lane": "entry", "col": 1, "type": "frontend", "label": "Codex + PowerShell 入口", "sublabel": "sync · report · video · bootstrap", "width": 174 },
+    { "id": "rules", "lane": "governance", "col": 2, "type": "security", "label": "AGENTS.md 规则门", "sublabel": "权限 · 事实边界 · 状态口径", "tag": "先约束后执行", "width": 164 },
+    { "id": "operation", "lane": "governance", "col": 3, "type": "messagebus", "label": "操作路由", "sublabel": "入库 · 同步 · 报告 · 查询 · 维护", "width": 178 },
+    { "id": "internal", "lane": "sources", "col": 1, "type": "cloud", "label": "内部项目仓库", "sublabel": "repos/* · 远程分支 diff", "tag": "只读", "width": 164 },
+    { "id": "external", "lane": "sources", "col": 2, "type": "external", "label": "外部参考来源", "sublabel": "网页剪藏 · GitHub · 参考源码", "tag": "ownership: external", "width": 178 },
+    { "id": "raw", "lane": "sources", "col": 3, "type": "database", "label": "不可变 Raw", "sublabel": "日报 · 笔记 · 论文 · 视频文字稿", "tag": "禁止覆盖", "width": 174 },
+    { "id": "codex", "lane": "processing", "col": 4, "type": "backend", "label": "Codex 知识处理", "sublabel": "检索 · 归并 · 状态核验", "width": 176 },
+    { "id": "video", "lane": "processing", "col": 3, "type": "backend", "label": "视频事务流水线", "sublabel": "字幕 · ASR · 关键画面", "tag": "完整校验后落盘", "width": 172 },
+    { "id": "vault", "lane": "outputs", "col": 5, "type": "database", "label": "Obsidian Vault", "sublabel": "日报 · Wiki · Insights · 索引 · 日志", "tag": "知识数据仓库", "width": 184 },
+    { "id": "backup", "lane": "outputs", "col": 5, "type": "cloud", "label": "双仓独立备份", "sublabel": "framework / knowledge-data", "tag": "显式触发", "width": 178, "yOffset": 104 }
+  ],
+  "edges": [
+    { "id": "user-entry", "from": "user", "to": "entrypoints", "role": "main" },
+    { "id": "entry-rules", "from": "entrypoints", "to": "rules", "label": "加载长期规则", "variant": "security", "role": "main" },
+    { "id": "rules-route", "from": "rules", "to": "operation", "label": "选择合法操作", "variant": "security", "role": "main" },
+    { "id": "route-codex", "from": "operation", "to": "codex", "label": "按流程执行", "variant": "emphasis", "role": "main" },
+    { "id": "internal-codex", "from": "internal", "to": "codex", "label": "commits / diff / 分支状态", "role": "branch" },
+    { "id": "external-codex", "from": "external", "to": "codex", "label": "外部证据", "variant": "dashed", "role": "branch" },
+    { "id": "raw-codex", "from": "raw", "to": "codex", "label": "只读输入", "variant": "dashed", "role": "branch" },
+    { "id": "route-video", "from": "operation", "to": "video", "label": "VIDEO_INGEST", "role": "branch" },
+    { "id": "video-vault", "from": "video", "to": "vault", "label": "校验后原子写入", "variant": "emphasis", "role": "branch" },
+    { "id": "codex-vault", "from": "codex", "to": "vault", "label": "增量更新并建立双向链接", "variant": "emphasis", "role": "main" },
+    { "id": "vault-backup", "from": "vault", "to": "backup", "label": "用户明确备份时", "variant": "dashed", "role": "main" }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "不可跨越的边界",
+      "items": [
+        "repos/ 与 references/repos/ 始终只读且严格区分 internal / external",
+        "vault/raw/ 与 journal/daily/raw/ 是不可修改事实源"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "可信状态与持久化",
+      "items": [
+        "Feature 分支不自动视为已完成；同步状态仅在整条分支处理成功后推进",
+        "优先更新已有长期页面，再维护 Index 与 system/log.md"
+      ]
+    }
+  ]
+}
