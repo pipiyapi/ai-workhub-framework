@@ -4,14 +4,9 @@
 # Independent project and reference repositories are restored from their own remotes.
 /repos/
 /references/repos/
-/enterprise-skill-platform-template/
-/skill-management-platform-reusable/
 
 # Local analysis and source-snapshot workspaces are not part of the knowledge vault.
 /.codex-remote-attachments/
-/skill-platform-analysis/
-/skill-platform-source-snapshot-*/
-/source_audit.py
 
 # Machine-local environments, dependencies, caches, and build output.
 /.obsidian/
