@@ -246,3 +246,18 @@ references/repos/<repo-name>
 - 外部网页、GitHub 页面和第三方源码不能自动写成用户工作成果。
 - Feature/dev 分支内容必须标注真实状态，不能自动视为已完成或已合并。
 - 分支 SHA 只在该分支 Git 分析和知识更新全部成功后推进。
+
+## Skill 收藏
+
+`vault/skills/` 保存你认可的技能及其来源、参考材料与验证记录。入口是 `vault/skills/技能收藏.md`；一个技能对应一个 `<name>/SKILL.md`，不与 Wiki 概念页或项目源码混放。
+
+在当前知识库可以直接说“使用收藏的 <name> Skill”，Codex 会先读取相应文件。收藏本身不启用全局自动发现，也不执行脚本。需要安装到 Codex 的用户技能目录时：
+
+```powershell
+.\scripts\install-collected-skill.ps1 -Name <name> -CheckOnly
+.\scripts\install-collected-skill.ps1 -Name <name>
+```
+
+默认使用 CODEX_HOME/skills；未设置 CODEX_HOME 时使用用户目录下的 .codex/skills。`-Destination` 可指定其他技能目录。已有同名技能时停止，先比较再更新，不自动覆盖。新电脑恢复知识后，只安装自己要使用的条目。
+
+Skill 收藏属于知识仓库；通用目录规则、空白模板和安装脚本属于框架仓库。第三方技能保留许可证与来源，人物蒸馏保留本人材料、组织材料、推断及作者未确认内容的区别。新增视频仍复用现有 VIDEO_INGEST 管道。

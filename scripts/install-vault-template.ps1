@@ -17,6 +17,7 @@ if (-not (Test-Path -LiteralPath $templateRoot -PathType Container)) {
 }
 
 $directories = @(
+    'skills',
     'journal\daily\raw',
     'journal\daily\organized',
     'journal\weekly',

@@ -42,3 +42,7 @@
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Runtime skill installations and installer state are machine-local.
+/.agents/
+/skills-lock.json

@@ -151,3 +151,16 @@ powershell -ExecutionPolicy Bypass -File .\scripts\backup-all.ps1
 - `repos/` 与 `references/repos/` 不进入框架或知识仓库。
 - 虚拟环境、下载工具、缓存、Cookie、Token、密钥和 `.env` 不进入任何仓库。
 - Codex 聊天记录不是灾难恢复来源，重要结论必须沉淀到知识仓库。
+
+## 七、恢复 Skill 收藏
+
+`vault/skills/` 随知识仓库恢复，入口为 `skills/技能收藏.md`。框架只提供空白收藏模板和 `scripts/install-collected-skill.ps1`，不会附带旧知识库的个人技能。
+
+可以直接在知识库中按名称调用收藏文件。要启用 Codex 用户级自动发现，恢复后按需执行：
+
+```powershell
+.\scripts\install-collected-skill.ps1 -Name <name> -CheckOnly
+.\scripts\install-collected-skill.ps1 -Name <name>
+```
+
+脚本不覆盖已有技能，不执行技能附带脚本，也不安装整个收藏夹。CODEX_HOME、用户技能路径、Token、Cookie 和本机运行副本不随框架备份。收藏恢复成功不代表全局安装成功。
