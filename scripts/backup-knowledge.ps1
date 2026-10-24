@@ -11,7 +11,11 @@ $safeRepo = [System.IO.Path]::GetFullPath($repo).Replace('\', '/')
 
 function Invoke-KnowledgeGit {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
-    $output = & git -c "safe.directory=$safeRepo" -C $repo @Arguments 2>&1
+    # Git can emit non-fatal notices on stderr (for example, line-ending
+    # conversion warnings). Do not merge them into PowerShell's error stream:
+    # under $ErrorActionPreference = 'Stop', that would incorrectly abort a
+    # successful Git command before its exit code can be checked.
+    $output = & git -c "safe.directory=$safeRepo" -C $repo @Arguments
     if ($LASTEXITCODE -ne 0) {
         throw "Knowledge git $($Arguments -join ' ') failed:`n$($output -join [Environment]::NewLine)"
     }
